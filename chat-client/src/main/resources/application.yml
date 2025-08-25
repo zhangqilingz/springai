@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: quick-start
+
+  ai:
+    # deepseek
+    deepseek:
+      api-key: sk-1308c476504a4d7c9c08c4b51bd1937a
+      chat:
+        options:
+          model: deepseek-chat
+    # 阿里百炼
+    dashscope:
+      api-key: sk-1308c476504a4d7c9c08c4b51bd1937a
+      chat:
+        options:
+          model: qwen-plus
+
+    # 对话记忆配置
+    chat:
+      memory:
+        repository:
+          # jdbc记忆存储
+          jdbc:
+            initialize-schema: always
+            schema: classpath:/sql/chat-memory.sql
+    # redis记忆存储
+    memory:
+      redis:
+        host: 10.31.0.128
+        port: 6379
+        timeout: 5000
+        password:
+
+
+  datasource:
+    username: root
+    password: chinasoft@123
+    url: jdbc:mysql://10.31.0.128:3306/zhaoyu?characterEncoding=utf8&useSSL=false&serverTimezone=UTC&
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: debug
