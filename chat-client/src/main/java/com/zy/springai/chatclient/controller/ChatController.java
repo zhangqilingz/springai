@@ -2,6 +2,7 @@ package com.zy.springai.chatclient.controller;
 
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.zy.springai.chatclient.config.ReReadingAdvisor;
+import com.zy.springai.chatclient.pojo.ActorsFilms;
 import com.zy.springai.chatclient.pojo.Address;
 import com.zy.springai.chatclient.pojo.ModelOptions;
 import jakarta.annotation.Resource;
@@ -13,13 +14,20 @@ import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.deepseek.DeepSeekChatModel;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +56,9 @@ public class ChatController {
         platforms.put("deepseek", deepSeekChatModel);
     }
 
+    /**
+     * 基本的对话实现
+     */
     @RequestMapping(value = "/chat1")
     public Flux<String> chat(String message, ModelOptions options,
                              @Value("classpath:/prompt/system1.st") org.springframework.core.io.Resource systemResource) {
@@ -66,7 +77,7 @@ public class ChatController {
      * 结构化输出，响应为boolean案例
      */
     @RequestMapping(value = "/chat2")
-    public void chat2(String message, ModelOptions options,
+    public void chatStructureOut1(String message, ModelOptions options,
                              @Value("classpath:/prompt/is-complain.st") org.springframework.core.io.Resource systemResource) {
         ChatModel chatModel = platforms.get(options.getPlatform());
 
@@ -92,7 +103,7 @@ public class ChatController {
      * 结构化输出，响应为实体案例
      */
     @RequestMapping(value = "/chat3")
-    public void chat3(String message, ModelOptions options,
+    public void chatStructureOut2(String message, ModelOptions options,
                       @Value("classpath:/prompt/address-prompt.st") org.springframework.core.io.Resource systemResource) {
         ChatModel chatModel = platforms.get(options.getPlatform());
 
@@ -105,6 +116,30 @@ public class ChatController {
                 .call()
                 .entity(Address.class);
         System.out.println(address);
+    }
+
+    /**
+     * 结构化输出原理
+     */
+    @RequestMapping(value = "/chat4")
+    public String chatStructureOut3(String message, ModelOptions options,
+                      @Value("classpath:/prompt/system1.st") org.springframework.core.io.Resource systemResource)  throws IOException {
+        ChatModel chatModel = platforms.get(options.getPlatform());
+        ChatClient chatClient = buildChatClient(options, chatModel).build();
+
+        BeanOutputConverter<ActorsFilms> beanOutputConverter = new BeanOutputConverter<>(ActorsFilms.class);
+        // 根据ActorsFilms类生成格式模板提示词
+        String format = beanOutputConverter.getFormat();
+        // 读取提示词模板
+        String templateText  = StreamUtils.copyToString(systemResource.getInputStream(), StandardCharsets.UTF_8);
+        // 构建完整的提示词
+        Prompt prompt = PromptTemplate.builder().template(templateText)
+                .variables(Map.of("actor", message, "format", format)).build().create();
+
+        ChatResponse chatResponse = chatClient.prompt()
+                .user(prompt.getContents())
+                .call().chatResponse();
+        return chatResponse.getResult().getOutput().getText();
     }
 
     private @NotNull ChatClient.Builder buildChatClient(ModelOptions options, ChatModel chatModel) {
