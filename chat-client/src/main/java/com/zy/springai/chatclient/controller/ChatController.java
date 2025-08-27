@@ -119,7 +119,8 @@ public class ChatController {
     }
 
     /**
-     * 结构化输出原理
+     * 结构化输出原理，
+     * 原理就是spring-ai内部根据需要转换的实体生成一个“格式提示词”，然后大模型会根据这个格式响应实体对应的json格式，这样就能够序列化了
      */
     @RequestMapping(value = "/chat4")
     public String chatStructureOut3(String message, ModelOptions options,
