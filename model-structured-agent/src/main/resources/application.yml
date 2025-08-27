@@ -16,6 +16,13 @@ spring:
         options:
           model: qwen-plus
 
+    # 配置mcp
+    mcp:
+      client:
+        request-timeout: 60000
+        stdio:
+          servers-configuration: classpath:/mcp/mcp-servers-config.json
+
     # 对话记忆配置
     chat:
       memory:

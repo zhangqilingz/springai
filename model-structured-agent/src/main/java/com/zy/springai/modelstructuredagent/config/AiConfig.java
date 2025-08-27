@@ -8,6 +8,8 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +56,24 @@ public class AiConfig {
                 .defaultSystem("""
                            你是XS航空智能客服代理， 请以友好的语气服务用户。
                             """)
+                .defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
+                )
+                .defaultOptions(dashScopeChatOptions)
+                .build();
+    }
+
+    @Bean
+    public ChatClient mcpChatClient(DashScopeChatModel chatModel,
+                                    DashScopeChatProperties options,
+                                    // 外部 mcp tools
+                                    ToolCallbackProvider mcpTools,
+                                    @Qualifier("jdbcChatMemory") ChatMemory chatMemory) {
+
+        DashScopeChatOptions dashScopeChatOptions = DashScopeChatOptions.fromOptions(options.getOptions());
+        return  ChatClient.builder(chatModel)
+                // 配置外部的 mcp tools
+                .defaultToolCallbacks(mcpTools)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )
