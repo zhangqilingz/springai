@@ -3,10 +3,9 @@ package com.zy.springai.modelstructuredagent.config;
 import com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeChatProperties;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
+import com.zy.springai.modelstructuredagent.tools.TicksTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-
-import java.util.List;
 
 @Configuration
 public class AiConfig {
@@ -46,11 +43,14 @@ public class AiConfig {
     @Bean
     public ChatClient botChatClient(DashScopeChatModel chatModel,
                                     DashScopeChatProperties options,
+                                    TicksTools ticksTools,
                                     @Qualifier("jdbcChatMemory") ChatMemory chatMemory) {
 
         DashScopeChatOptions dashScopeChatOptions = DashScopeChatOptions.fromOptions(options.getOptions());
         dashScopeChatOptions.setTemperature(1.2);
         return  ChatClient.builder(chatModel)
+                // 这里底层会告诉大模型提供了哪些工具可以调用
+                .defaultTools(ticksTools)
                 .defaultSystem("""
                            你是XS航空智能客服代理， 请以友好的语气服务用户。
                             """)

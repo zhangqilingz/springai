@@ -57,4 +57,14 @@ public class MultiModelsController {
         }).start();
         return sink.asFlux();
     }
+
+    /**
+     * 使用 tool 案例,
+     *  tool使用： 1.先定义tool方法，然后在tool方法中调用相应的业务接口；2.将tool工具类设置到chatClient的defaultTools属性里
+     */
+    @GetMapping("/sink/chat1")
+    Flux<String> stream1(@RequestParam String message) {
+        Flux<String> content = botChatClient.prompt().user(message).stream().content();
+        return content;
+    }
 }
