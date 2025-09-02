@@ -6,6 +6,10 @@ spring:
     # 阿里百炼
     dashscope:
       api-key: sk-1308c476504a4d7c9c08c4b51bd1937a
+      # 设置大语言模型
+      chat:
+        options:
+          model: qwen-plus
       # 设置向量模型
       embedding:
         options:
