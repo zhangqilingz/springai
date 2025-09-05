@@ -11,7 +11,7 @@ import java.util.Arrays;
 @Component
 public class VectorStoreInitializer {
 
-    @Resource
+    @Resource(name = "simpleVectorStore")
     private VectorStore vectorStore;
 
     /**
@@ -37,7 +37,7 @@ public class VectorStoreInitializer {
                 """)
                 .build();
 
-        // 2. 将文本进行向量化，并且存入向量数据库（无需再手动向量化）
+        // 2. 将文本进行向量化，并且存入向量数据库
         vectorStore.add(Arrays.asList(doc,doc2));
     }
 }

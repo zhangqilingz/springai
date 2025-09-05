@@ -14,7 +14,19 @@ spring:
       embedding:
         options:
           model: text-embedding-v4
-          dimensions: 2048
+          dimensions: 1024
+    vectorstore:
+      milvus:
+        client:
+          host: "localhost"
+          port: 19530
+#          username: "root"
+#          password: "milvus"
+        databaseName: "default"
+        collectionName: "test"
+        embeddingDimension: 1024
+        indexType: IVF_FLAT
+        metricType: COSINE
 
 logging:
   level:
